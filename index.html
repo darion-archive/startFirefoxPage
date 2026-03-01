@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZUBAZHYNNIA PAGE</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-base: #010203;
+            --panel-bg: rgba(4, 10, 15, 0.95);
+            --panel-border: rgba(0, 243, 255, 0.15);
+            --cyan: #00f3ff;
+            --magenta: #ff00ff;
+            --green: #39ff14;
+            --text-main: #e2f1f8;
+            --text-muted: #4e6172;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Custom Neon Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(0, 243, 255, 0.3) var(--bg-base); }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 0;
+            background-image:
+                    linear-gradient(rgba(0, 243, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 243, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* GPU Accelerated Scanlines */
+        body::after {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            z-index: 100; background-size: 100% 3px; pointer-events: none; opacity: 0.8;
+            transform: translateZ(0);
+        }
+
+        .hud-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 350px;
+            grid-auto-rows: min-content;
+            gap: 25px;
+            width: 90vw;
+            max-width: 1500px;
+            z-index: 10;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 25px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Command Bar */
+        .header-search {
+            grid-column: 1 / -1; display: flex; align-items: center; padding: 0;
+            background: rgba(0, 243, 255, 0.03); border: 1px solid var(--cyan);
+        }
+        .prompt {
+            font-family: 'JetBrains Mono', monospace; color: var(--cyan);
+            padding: 20px 30px; font-weight: 800; font-size: 1.1rem;
+            background: rgba(0, 243, 255, 0.1); border-right: 1px solid var(--cyan);
+        }
+        .search-input {
+            flex-grow: 1; background: transparent; border: none; color: #fff;
+            font-family: 'JetBrains Mono', monospace; font-size: 1.5rem;
+            padding: 20px 25px; outline: none;
+        }
+
+        /* Headers & Links */
+        .module-header {
+            font-family: 'JetBrains Mono', monospace; color: var(--magenta);
+            font-weight: 800; border-bottom: 1px dashed rgba(255, 0, 255, 0.3);
+            padding-bottom: 10px; margin-bottom: 15px; font-size: 0.85rem; letter-spacing: 2px;
+        }
+        .nav-link {
+            display: flex; align-items: center; gap: 15px; padding: 14px 16px; margin-bottom: 10px;
+            text-decoration: none; color: var(--text-main); background: rgba(255,255,255,0.02);
+            border-left: 3px solid transparent; border-radius: 4px; font-weight: 500; font-size: 1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-link:hover {
+            background: rgba(0, 243, 255, 0.08); border-left-color: var(--cyan);
+            box-shadow: inset 20px 0 20px -20px rgba(0, 243, 255, 0.5); transform: translateX(5px);
+        }
+        .icon {
+            width: 20px; height: 20px; stroke: var(--cyan); stroke-width: 2;
+            stroke-linecap: round; stroke-linejoin: round; fill: none; transition: 0.2s;
+        }
+        .nav-link:hover .icon { transform: scale(1.1); filter: drop-shadow(0 0 5px var(--cyan)); }
+
+        /* Link Colors */
+        .proton:hover .icon { stroke: #8b5cf6; filter: drop-shadow(0 0 5px #8b5cf6); }
+        .proton:hover { border-left-color: #8b5cf6; background: rgba(139, 92, 246, 0.08); box-shadow: inset 20px 0 20px -20px rgba(139, 92, 246, 0.5); }
+        .yt:hover .icon { stroke: #ff0000; filter: drop-shadow(0 0 5px #ff0000); }
+        .yt:hover { border-left-color: #ff0000; background: rgba(255, 0, 0, 0.08); box-shadow: inset 20px 0 20px -20px rgba(255, 0, 0, 0.5); }
+        .nait:hover .icon { stroke: #00a4e4; filter: drop-shadow(0 0 5px #00a4e4); }
+        .nait:hover { border-left-color: #00a4e4; background: rgba(0, 164, 228, 0.08); box-shadow: inset 20px 0 20px -20px rgba(0, 164, 228, 0.5); }
+
+        .center-col { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+
+        /* =========================================
+           GPU MEDIA MODULE (NOW WITH CONTROLS)
+           ========================================= */
+        .media-panel {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; height: 100%; position: relative; overflow: hidden;
+        }
+        .equalizer-bg {
+            position: absolute; top: 50%; left: 50%;
+            width: 200px; height: 200px; background: radial-gradient(circle, rgba(255,0,255,0.2) 0%, transparent 70%);
+            animation: pulseGlow 2s ease-in-out infinite alternate; z-index: 0;
+            will-change: transform, opacity;
+            transform: translate(-50%, -50%) translateZ(0);
+        }
+        .vinyl-wrapper { position: relative; width: 140px; height: 140px; margin-bottom: 25px; z-index: 1; }
+        .vinyl {
+            width: 100%; height: 100%; border-radius: 50%;
+            background: repeating-radial-gradient(#050505 0%, #050505 4%, #111 5%, #050505 6%);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.3), inset 0 0 15px rgba(0, 0, 0, 0.8);
+            border: 2px solid var(--magenta); animation: spin 3s linear infinite;
+            position: relative; display: flex; justify-content: center; align-items: center;
+            will-change: transform;
+        }
+        .vinyl::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%;
+            background: conic-gradient(from 45deg, transparent 0deg, rgba(255,255,255,0.1) 45deg, transparent 90deg, transparent 180deg, rgba(255,255,255,0.1) 225deg, transparent 270deg); pointer-events: none;
+        }
+        .vinyl-label {
+            width: 50px; height: 50px; background: var(--magenta); border-radius: 50%;
+            border: 4px solid #050505; display: flex; justify-content: center; align-items: center; position: relative; z-index: 2;
+        }
+        .vinyl-hole { width: 10px; height: 10px; background: var(--bg-base); border-radius: 50%; box-shadow: inset 0 0 4px #000; }
+
+        .track-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); text-shadow: 0 0 10px var(--cyan); margin-bottom: 5px; letter-spacing: 1px; z-index: 1; transition: opacity 0.3s; }
+        .track-artist { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--magenta); text-shadow: 0 0 5px rgba(255, 0, 255, 0.5); z-index: 1; margin-bottom: 15px; }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 80%; height: 4px; background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px; position: relative; z-index: 2; overflow: hidden; margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background: var(--magenta);
+            box-shadow: 0 0 10px var(--magenta); transition: width 1s linear;
+        }
+
+        /* Interactive Media Controls */
+        .media-controls {
+            display: flex; gap: 20px; align-items: center; z-index: 2;
+        }
+        .control-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 50%; width: 45px; height: 45px; display: flex;
+            justify-content: center; align-items: center; cursor: pointer;
+            transition: all 0.2s ease; outline: none;
+        }
+        .control-btn:hover {
+            background: rgba(0, 243, 255, 0.1); border-color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3); transform: scale(1.1);
+        }
+        .control-btn:active { transform: scale(0.95); }
+
+        .m-icon {
+            width: 20px; height: 20px; stroke: var(--cyan); stroke-width: 2;
+            stroke-linecap: round; stroke-linejoin: round; fill: none;
+        }
+        .control-btn:hover .m-icon { filter: drop-shadow(0 0 5px var(--cyan)); }
+
+        .play-pause-btn { width: 55px; height: 55px; border-color: var(--magenta); }
+        .play-pause-btn .m-icon { stroke: var(--magenta); width: 24px; height: 24px; fill: rgba(255, 0, 255, 0.2); }
+        .play-pause-btn:hover {
+            border-color: var(--magenta); box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+        }
+        .play-pause-btn:hover .m-icon { filter: drop-shadow(0 0 5px var(--magenta)); }
+
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseGlow { 0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; } 100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; } }
+
+        /* Time & Weather */
+        .time-panel {
+            grid-column: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 30px;
+        }
+        .time-display {
+            font-family: 'JetBrains Mono', monospace; font-size: 3.8rem; font-weight: 800;
+            color: var(--cyan); text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+            line-height: 1; margin-bottom: 10px; letter-spacing: -2px;
+        }
+        .time-seconds { font-size: 1.5rem; color: var(--text-muted); text-shadow: none; }
+        .date-display {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.2rem;
+            color: var(--magenta); text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        .weather-panel { grid-column: 2 / -1; display: flex; flex-direction: column; }
+        .weather-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .current-cond { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; color: var(--green); text-shadow: 0 0 10px rgba(57, 255, 20, 0.4); }
+
+        .forecast-container { display: grid; grid-template-columns: repeat(7, 1fr); gap: 15px; flex-grow: 1; }
+        .day-card {
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px; padding: 15px 10px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .day-card:hover {
+            border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: translateY(-5px); background: rgba(0, 243, 255, 0.05);
+        }
+        .day-name { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 1.1rem; color: var(--text-main); margin-bottom: 10px; }
+        .w-icon { width: 32px; height: 32px; stroke: var(--cyan); stroke-width: 1.5; fill: none; margin-bottom: 10px; filter: drop-shadow(0 0 5px var(--cyan)); }
+        .day-temps { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
+        .temp-high { color: #fff; }
+        .temp-low { color: var(--text-muted); font-size: 0.9rem; margin-left: 5px; }
+        .day-precip { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #00a4e4; }
+
+    </style>
+</head>
+<body>
+
+<div class="hud-container">
+
+    <div class="panel header-search">
+        <div class="prompt">DARE@SYS:~$</div>
+        <input type="text" id="searchInput" class="search-input" placeholder="Initiate web search..." autofocus autocomplete="off">
+    </div>
+
+    <div class="panel">
+        <div class="module-header">// SECURE_NET</div>
+        <nav>
+            <a href="https://mail.proton.me" class="nav-link proton" target="_blank">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg> Proton Mail
+            </a>
+            <a href="https://calendar.proton.me" class="nav-link proton" target="_blank">
+                <svg class="icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg> Proton Calendar
+            </a>
+            <a href="https://drive.proton.me" class="nav-link proton" target="_blank">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></svg> Proton Drive
+            </a>
+            <a href="https://web.telegram.org" class="nav-link" style="margin-top: 15px;" target="_blank">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Telegram
+            </a>
+        </nav>
+    </div>
+
+    <div class="center-col">
+        <div class="panel">
+            <div class="module-header">// ACADEMY</div>
+            <nav>
+                <a href="https://my.nait.ca/default.aspx" class="nav-link nait" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg> NAIT Portal
+                </a>
+                <a href="https://lms.nait.ca/d2l/home" class="nav-link nait" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M21.42 10.922a2 2 0 0 1-.006 2.834l-8.586 8.586a2 2 0 0 1-2.828 0l-8.586-8.586a2 2 0 0 1-.006-2.834L12 2.5l9.42 8.422Z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></svg> Brightspace LMS
+                </a>
+            </nav>
+
+            <div class="module-header" style="margin-top: 25px;">// DEV_WORKSPACE</div>
+            <nav>
+                <a href="https://github.com" class="nav-link" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.03c3.15-.38 6.5-1.4 6.5-7.17A5.1 5.1 0 0 0 19 5.3a5.1 5.1 0 0 0-.1-3.3s-1.1-.35-3.5 1.3a12.8 12.8 0 0 0-6 0C7.1 1.65 6 2 6 2a5.1 5.1 0 0 0-.1 3.3 5.1 5.1 0 0 0-1.5 2.5c0 5.77 3.35 6.79 6.5 7.17A4.8 4.8 0 0 0 10 18v4"/><path d="M9 20c-5 1.5-5-2.5-7-3"/></svg> GitHub
+                </a>
+                <a href="https://leetcode.com" class="nav-link" style="--cyan: #ffa116;" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> LeetCode
+                </a>
+                <a href="about:addons" class="nav-link" style="--cyan: #ff7139;" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M19.4 7.9c-.1.3.1.6.3.9l1.6 1.6c.5.5.7 1.1.7 1.7s-.2 1.2-.7 1.7l-1.6 1.6c-.2.2-.3.6-.1.9.1.3.4.5.7.4h2.2c.6 0 1.2.3 1.6.7.4.4.6 1 .6 1.6s-.2 1.2-.6 1.6l-1.6 1.6c-.3.3-.5.7-.4 1 .1.3.4.5.7.4h2.2c.6 0 1.2.3 1.6.7.4.4.6 1 .6 1.6s-.2 1.2-.6 1.6l-1.6 1.6c-.3.3-.5.7-.4 1 .1.3.4.5.7.4h2.2c.6 0 1.2.3 1.6.7.4.4.6 1 .6 1.6s-.2 1.2-.6 1.6l-1.6 1.6c-.3.3-.5.7-.4 1 .1.3.4.5.7.4h2.2"/></svg> FX Extensions
+                </a>
+            </nav>
+        </div>
+
+        <div class="panel">
+            <div class="module-header">// LINGUISTICS</div>
+            <nav>
+                <a href="https://www.deepl.com" class="nav-link" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg> DeepL Translate
+                </a>
+                <a href="https://dictionary.cambridge.org" class="nav-link" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m8 13 4-7 4 7"/><path d="M9.1 11h5.7"/></svg> Cambridge Dict
+                </a>
+            </nav>
+
+            <div class="module-header" style="margin-top: 25px;">// OFF_DUTY</div>
+            <nav>
+                <a href="https://youtube.com" class="nav-link yt" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M2.5 7.1c.3-1.4 1.4-2.5 2.8-2.8C8 4 12 4 12 4s4 0 6.7.3c1.4.3 2.5 1.4 2.8 2.8.3 2.7.3 8 .3 8s0 5.3-.3 8c-.3 1.4-1.4 2.5-2.8 2.8C16 20 12 20 12 20s-4 0-6.7-.3c-1.4-.3-2.5-1.4-2.8-2.8C2 14.3 2 9.1 2 9.1s0-5.3.5-2z"/><path d="m10 15 5-3-5-3v6z"/></svg> YouTube
+                </a>
+                <a href="https://reddit.com" class="nav-link" style="--cyan: #ff4500;" target="_blank">
+                    <svg class="icon" viewBox="0 0 24 24"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg> Reddit
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="panel media-panel">
+        <div class="module-header" style="position: absolute; top: 25px; left: 25px; border:none; color: var(--text-muted);">// AUDIO_SYS</div>
+
+        <div class="equalizer-bg" id="eq-bg"></div>
+        <div class="vinyl-wrapper"><div class="vinyl" id="vinyl-record"><div class="vinyl-label"><div class="vinyl-hole"></div></div></div></div>
+
+        <div class="track-title" id="track-name">PRESIDENT</div>
+        <div class="track-artist">> TYMASHENKA <</div>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="track-progress"></div>
+        </div>
+
+        <div class="media-controls">
+            <button class="control-btn" onclick="prevTrack()" title="Previous Track">
+                <svg class="m-icon" viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+            </button>
+
+            <button class="control-btn play-pause-btn" id="play-btn" onclick="togglePlay()" title="Play / Pause">
+                <svg class="m-icon" id="play-icon" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+
+            <button class="control-btn" onclick="nextTrack()" title="Next Track">
+                <svg class="m-icon" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="panel time-panel">
+        <div class="module-header" style="width: 100%; text-align: left; margin-top: -10px;">// CHRONOS</div>
+        <div class="time-display" id="clock">00:00<span class="time-seconds">00</span></div>
+        <div class="date-display" id="date">JAN 01, 2026</div>
+    </div>
+
+    <div class="panel weather-panel">
+        <div class="weather-header">
+            <div class="module-header" style="margin: 0; border: none;">// METEOROLOGY_LINK [SAT_COM ACTIVE]</div>
+            <div class="current-cond" id="current-temp">--°C</div>
+        </div>
+
+        <div class="forecast-container" id="forecast-grid">
+            <div style="grid-column: 1/-1; text-align: center; margin-top: 20px; color: var(--cyan);">INITIATING SATELLITE HANDSHAKE...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+  // Search Logic
+  document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      const val = this.value.trim();
+      if (!val) return;
+      if (val.startsWith('yt ')) window.location.href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(val.substring(3));
+      else window.location.href = 'https://duckduckgo.com/?q=' + encodeURIComponent(val);
+    }
+  });
+
+  document.body.addEventListener('click', (e) => {
+    // Exclude buttons from stealing focus
+    if(e.target.tagName !== 'A' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+      document.getElementById('searchInput').focus();
+    }
+  });
+
+  // Time & Date Logic
+  function updateTime() {
+    const now = new Date();
+    const hrs = now.getHours().toString().padStart(2, '0');
+    const mins = now.getMinutes().toString().padStart(2, '0');
+    const secs = now.getSeconds().toString().padStart(2, '0');
+
+    document.getElementById('clock').innerHTML = `${hrs}:${mins}<span class="time-seconds">:${secs}</span>`;
+
+    const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+    document.getElementById('date').textContent = now.toLocaleDateString('en-US', dateOptions).toUpperCase();
+  }
+  setInterval(updateTime, 1000); updateTime();
+
+
+  // --- TYMASHENKA MEDIA CONTROLS LOGIC ---
+  const tracks = [
+    "PRESIDENT", "7662", "Ґроши", "Get gas", "МЄГАКАРУПЦИЯ",
+    "Воля", "Правки є", "ДК Зубажинка", "Смаґазове небо",
+    "2ПАКЄТІКАПА2ҐРАМА", "Брюнетка", "Мед-Печаль", "НАБУ",
+    "Жиночка", "У Юлі є план"
+  ];
+
+  let currentTrackIndex = 0;
+  let trackProgressSeconds = 0;
+  const secondsPerTrack = 180; // 3 minutes per track
+  let isPlaying = true; // Starts playing automatically
+
+  const trackNameElement = document.getElementById('track-name');
+  const progressBarElement = document.getElementById('track-progress');
+  const playIconElement = document.getElementById('play-icon');
+
+  // Hardware elements to pause animation
+  const vinylRecord = document.getElementById('vinyl-record');
+  const eqBackground = document.getElementById('eq-bg');
+
+  // Icons mapping for play/pause toggle
+  const iconPause = `<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>`;
+  const iconPlay = `<polygon points="5 3 19 12 5 21 5 3"/>`;
+
+  function changeTrackUI() {
+    trackNameElement.style.opacity = 0;
+    setTimeout(() => {
+      trackNameElement.textContent = tracks[currentTrackIndex];
+      trackNameElement.style.opacity = 1;
+    }, 200);
+
+    // Smooth reset of the progress bar
+    progressBarElement.style.transition = 'none';
+    progressBarElement.style.width = '0%';
+    setTimeout(() => { progressBarElement.style.transition = 'width 1s linear'; }, 50);
+  }
+
+  function nextTrack() {
+    currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+    trackProgressSeconds = 0;
+    changeTrackUI();
+  }
+
+  function prevTrack() {
+    // Handles the loop-around if going backward from the first track
+    currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+    trackProgressSeconds = 0;
+    changeTrackUI();
+  }
+
+  function togglePlay() {
+    isPlaying = !isPlaying;
+
+    if (isPlaying) {
+      playIconElement.innerHTML = iconPause;
+      vinylRecord.style.animationPlayState = 'running';
+      eqBackground.style.animationPlayState = 'running';
+    } else {
+      playIconElement.innerHTML = iconPlay;
+      vinylRecord.style.animationPlayState = 'paused';
+      eqBackground.style.animationPlayState = 'paused';
+    }
+  }
+
+  // Auto-progress tick
+  function updateMediaPlayer() {
+    if (!isPlaying) return; // Halt progress if paused
+
+    trackProgressSeconds++;
+
+    if (trackProgressSeconds >= secondsPerTrack) {
+      nextTrack();
+    } else {
+      const percentage = (trackProgressSeconds / secondsPerTrack) * 100;
+      progressBarElement.style.width = percentage + '%';
+    }
+  }
+
+  // Initialize
+  trackNameElement.textContent = tracks[currentTrackIndex];
+  setInterval(updateMediaPlayer, 1000);
+  // ---------------------------------------
+
+
+  // --- 7-DAY WEATHER LOGIC ---
+  const svgIcons = {
+    sun: '<svg class="w-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
+    cloud: '<svg class="w-icon" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>',
+    rain: '<svg class="w-icon" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M16 14v6"/><path d="M8 14v6"/><path d="M12 16v6"/></svg>',
+    snow: '<svg class="w-icon" viewBox="0 0 24 24"><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/></svg>',
+    storm: '<svg class="w-icon" viewBox="0 0 24 24"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><polyline points="13 11 9 17 15 17 11 23"/></svg>'
+  };
+
+  function getWeatherIcon(code) {
+    if (code <= 1) return svgIcons.sun;
+    if (code <= 3 || code == 45 || code == 48) return svgIcons.cloud;
+    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return svgIcons.rain;
+    if ((code >= 71 && code <= 77) || code == 85 || code == 86) return svgIcons.snow;
+    if (code >= 95) return svgIcons.storm;
+    return svgIcons.cloud;
+  }
+
+  async function fetchWeeklyWeather() {
+    try {
+      const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=53.5461&longitude=-113.4938&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FEdmonton');
+      const data = await res.json();
+
+      const currTemp = Math.round(data.current.temperature_2m);
+      document.getElementById('current-temp').innerHTML = `EDMONTON // <span style="color:#fff;">${currTemp}°C</span>`;
+
+      const daily = data.daily;
+      let gridHtml = '';
+      const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+      for(let i = 0; i < 7; i++) {
+        const parts = daily.time[i].split('-');
+        const localDate = new Date(parts[0], parts[1] - 1, parts[2]);
+        const dayName = i === 0 ? "TODAY" : daysOfWeek[localDate.getDay()];
+
+        const high = Math.round(daily.temperature_2m_max[i]);
+        const low = Math.round(daily.temperature_2m_min[i]);
+        const precip = daily.precipitation_probability_max[i];
+        const iconSvg = getWeatherIcon(daily.weather_code[i]);
+
+        gridHtml += `
+          <div class="day-card">
+            <div class="day-name">${dayName}</div>
+            ${iconSvg}
+            <div class="day-temps">
+              <span class="temp-high">${high}°</span><span class="temp-low">${low}°</span>
+            </div>
+            <div class="day-precip">${precip}% RAIN</div>
+          </div>
+        `;
+      }
+
+      document.getElementById('forecast-grid').innerHTML = gridHtml;
+
+    } catch (err) {
+      document.getElementById('forecast-grid').innerHTML = `<div style="grid-column: 1/-1; color: red;">SAT_COM ERROR: OFFLINE</div>`;
+    }
+  }
+
+  fetchWeeklyWeather();
+</script>
+</body>
+</html>
