@@ -563,6 +563,43 @@
             font-size: 0.75rem;
             color: #00a4e4;
         }
+
+        /* =========================================
+   DARE_OS // MOBILE SHAPESHIFTER
+   ========================================= */
+
+        /* This rule only activates on screens narrower than 768px (Phones/Tablets) */
+        @media screen and (max-width: 768px) {
+
+            /* 1. Stack Everything Vertically */
+            body, .container, .main-wrapper {
+                flex-direction: column !important;
+                padding: 10px !important;
+            }
+
+            /* 2. Force Grids to a Single Column */
+            .grid, .links-container, .command-module {
+                display: grid !important;
+                grid-template-columns: 1fr !important; /* 1 Column */
+                width: 100% !important;
+                gap: 15px !important;
+            }
+
+            /* 3. Make Buttons Thumb-Friendly */
+            a, .button, .link-item {
+                padding: 18px 20px !important; /* Taller padding for thumbs */
+                font-size: 16px !important;    /* Larger, readable font */
+                text-align: center !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 4. Shrink massive ASCII art or headers if you have them */
+            h1, .title, pre {
+                font-size: 1.5rem !important;
+                overflow-x: auto !important; /* Lets code/ASCII scroll sideways if too wide */
+            }
+        }
     </style>
 </head>
 
