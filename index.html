@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ZUBAZHYNNIA PAGE</title>
     <link
         href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Outfit:wght@300;500;700&display=swap"
@@ -565,39 +565,106 @@
         }
 
         /* =========================================
-   DARE_OS // MOBILE SHAPESHIFTER
+   DARE_OS // MOBILE TERMINAL OVERRIDE
    ========================================= */
 
-        /* This rule only activates on screens narrower than 768px (Phones/Tablets) */
-        @media screen and (max-width: 768px) {
-
-            /* 1. Stack Everything Vertically */
-            body, .container, .main-wrapper {
-                flex-direction: column !important;
-                padding: 10px !important;
+        @media screen and (max-width: 800px) {
+            /* 1. Reset Body Padding for maximum screen real estate */
+            body {
+                padding: 10px;
+                align-items: flex-start; /* Aligns to top instead of center */
+                overflow-y: auto; /* Allows scrolling */
             }
 
-            /* 2. Force Grids to a Single Column */
-            .grid, .links-container, .command-module {
-                display: grid !important;
-                grid-template-columns: 1fr !important; /* 1 Column */
-                width: 100% !important;
-                gap: 15px !important;
+            /* 2. Collapse the Main Grid into a Single Column */
+            .hud-container {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                width: 100%;
+                max-width: 100%;
+                height: auto;
             }
 
-            /* 3. Make Buttons Thumb-Friendly */
-            a, .button, .link-item {
-                padding: 18px 20px !important; /* Taller padding for thumbs */
-                font-size: 16px !important;    /* Larger, readable font */
-                text-align: center !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
+            /* 3. Collapse the Center Column */
+            .center-col {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
             }
 
-            /* 4. Shrink massive ASCII art or headers if you have them */
-            h1, .title, pre {
-                font-size: 1.5rem !important;
-                overflow-x: auto !important; /* Lets code/ASCII scroll sideways if too wide */
+            /* 4. Tactical Navigation Grid (2x2 Buttons) */
+            nav {
+                display: grid;
+                grid-template-columns: 1fr 1fr; /* Puts links side-by-side */
+                gap: 10px;
+            }
+
+            .nav-link {
+                padding: 12px 10px;
+                font-size: 13px;
+                text-align: center;
+                justify-content: center;
+                flex-direction: column; /* Stacks Icon on top of Text */
+            }
+
+            .nav-link .icon {
+                margin-right: 0;
+                margin-bottom: 5px;
+                width: 20px;
+                height: 20px;
+            }
+
+            /* 5. Fix Search Bar for iOS/Android */
+            .header-search {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+
+            .prompt {
+                margin-bottom: 10px;
+                font-size: 14px;
+            }
+
+            .search-input {
+                font-size: 16px !important; /* MUST be 16px so iOS doesn't auto-zoom */
+                width: 100%;
+                padding: 5px 0;
+            }
+
+            /* 6. Chronos (Time) Panel Adjustments */
+            .time-display {
+                font-size: 3.5rem; /* Shrinks the massive desktop clock */
+                text-align: center;
+            }
+
+            .date-display {
+                font-size: 1.2rem;
+                text-align: center;
+            }
+
+            /* 7. Weather Panel Adjustments */
+            .weather-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .current-cond {
+                margin-top: 10px;
+                font-size: 2rem;
+            }
+
+            .forecast-container {
+                grid-template-columns: repeat(3, 1fr); /* 3 days per row on mobile */
+                gap: 5px;
+            }
+
+            /* 8. Media Player Scaling */
+            .vinyl-wrapper {
+                width: 100px;
+                height: 100px;
+                margin: 20px auto;
             }
         }
     </style>
