@@ -344,10 +344,15 @@
 
         .progress-bar {
             height: 100%;
-            width: 0%;
+            width: 100%;
+            /* Set full width initially */
             background: var(--magenta);
             box-shadow: 0 0 10px var(--magenta);
-            transition: width 1s linear;
+            transform-origin: left;
+            /* Scale from the left edge */
+            transform: scaleX(0);
+            /* Start at 0 progress */
+            transition: transform 1s linear;
         }
 
         /* Interactive Media Controls */
@@ -569,11 +574,14 @@
    ========================================= */
 
         @media screen and (max-width: 800px) {
+
             /* 1. Reset Body Padding for maximum screen real estate */
             body {
                 padding: 10px;
-                align-items: flex-start; /* Aligns to top instead of center */
-                overflow-y: auto; /* Allows scrolling */
+                align-items: flex-start;
+                /* Aligns to top instead of center */
+                overflow-y: auto;
+                /* Allows scrolling */
             }
 
             /* 2. Collapse the Main Grid into a Single Column */
@@ -596,7 +604,8 @@
             /* 4. Tactical Navigation Grid (2x2 Buttons) */
             nav {
                 display: grid;
-                grid-template-columns: 1fr 1fr; /* Puts links side-by-side */
+                grid-template-columns: 1fr 1fr;
+                /* Puts links side-by-side */
                 gap: 10px;
             }
 
@@ -605,7 +614,8 @@
                 font-size: 13px;
                 text-align: center;
                 justify-content: center;
-                flex-direction: column; /* Stacks Icon on top of Text */
+                flex-direction: column;
+                /* Stacks Icon on top of Text */
             }
 
             .nav-link .icon {
@@ -628,14 +638,16 @@
             }
 
             .search-input {
-                font-size: 16px !important; /* MUST be 16px so iOS doesn't auto-zoom */
+                font-size: 16px !important;
+                /* MUST be 16px so iOS doesn't auto-zoom */
                 width: 100%;
                 padding: 5px 0;
             }
 
             /* 6. Chronos (Time) Panel Adjustments */
             .time-display {
-                font-size: 3.5rem; /* Shrinks the massive desktop clock */
+                font-size: 3.5rem;
+                /* Shrinks the massive desktop clock */
                 text-align: center;
             }
 
@@ -656,7 +668,8 @@
             }
 
             .forecast-container {
-                grid-template-columns: repeat(3, 1fr); /* 3 days per row on mobile */
+                grid-template-columns: repeat(3, 1fr);
+                /* 3 days per row on mobile */
                 gap: 5px;
             }
 
@@ -985,8 +998,9 @@
                 if (trackProgressSeconds >= secondsPerTrack) {
                     nextTrack();
                 } else {
-                    const percentage = (trackProgressSeconds / secondsPerTrack) * 100;
-                    progressBarElement.style.width = percentage + '%';
+                    // Inside updateMediaPlayer()
+                    const percentage = (trackProgressSeconds / secondsPerTrack); // 0.0 to 1.0
+                    progressBarElement.style.transform = `scaleX(${percentage})`;
                 }
             }
 
